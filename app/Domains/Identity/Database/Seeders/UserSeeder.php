@@ -1,9 +1,9 @@
 <?php
 
-namespace Database\Seeders;
+namespace App\Domains\Identity\Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Domains\Identity\Models\User;
+use App\Domains\Tenancy\Models\Organization;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -14,37 +14,42 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        $superadmin = User::create([
-            'name' => 'Super Admin',
-            'email' => 'superadmin@larament.test',
-            'password' => Hash::make('password88'),
-            'status' => 'active',
-            'email_verified_at' => now(),
+        // Create a default organization
+        $organization = Organization::create([
+            'name' => 'Default Organization',
+            'is_active' => true,
         ]);
 
-        // Tetapkan role 'superadmin' ke user ini
-        // Role ini harus sudah dibuat oleh RolesAndPermissionsSeeder
+        // Create Superadmin
+        $superadmin = User::create([
+            'name' => 'Superadmin',
+            'email' => 'superadmin@larament.test',
+            'password' => Hash::make('password88'),
+            'organization_id' => $organization->id,
+            'email_verified_at' => now(),
+            'is_active' => true,
+        ]);
         $superadmin->assignRole('superadmin');
 
-
-        // (Opsional) Buat user 'admin'
+        // Create Admin
         $admin = User::create([
-            'name' => 'Admin User',
+            'name' => 'Admin',
             'email' => 'admin@larament.test',
             'password' => Hash::make('password66'),
-            'status' => 'active',
+            'organization_id' => $organization->id,
             'email_verified_at' => now(),
+            'is_active' => true,
         ]);
         $admin->assignRole('admin');
 
-
-        // (Opsional) Buat user 'user' biasa
+        // Create User
         $user = User::create([
-            'name' => 'Regular User',
+            'name' => 'User',
             'email' => 'user@larament.test',
             'password' => Hash::make('password33'),
-            'status' => 'active',
+            'organization_id' => $organization->id,
             'email_verified_at' => now(),
+            'is_active' => true,
         ]);
         $user->assignRole('user');
     }

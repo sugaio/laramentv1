@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Users\Tables;
 
+// 'use' statements Anda dari langkah sebelumnya sudah lengkap...
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -10,9 +11,11 @@ use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class UsersTable
 {
@@ -28,22 +31,23 @@ class UsersTable
                     ->label('Email')
                     ->searchable()
                     ->sortable(),
-
-                TextColumn::make('status')
+                IconColumn::make('is_active')
                     ->label('Status')
-                    ->badge()
-                    ->colors([
-                        'success' => 'active',
-                        'danger' => 'banned',
-                    ])
+                    ->boolean()
+                    ->trueIcon('heroicon-o-check-badge')
+                    ->falseIcon('heroicon-o-x-circle')
+                    ->trueColor('success')
+                    ->falseColor('danger')
                     ->sortable(),
-
+                TextColumn::make('organization.name')
+                    ->label('Organization')
+                    ->searchable()
+                    ->sortable()
+                    ->placeholder('No Organization'),
                 TextColumn::make('roles.name')
                     ->label('Peran (Roles)')
                     ->badge()
-                    ->colors(['primary'])
                     ->searchable(),
-
                 TextColumn::make('email_verified_at')
                     ->label('Terverifikasi')
                     ->dateTime('d M Y H:i')
@@ -63,10 +67,15 @@ class UsersTable
                 TrashedFilter::make(),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
-                ForceDeleteAction::make(),
-                RestoreAction::make(),
+                EditAction::make()
+                    ->visible(fn (Model $record): bool => ! $record->trashed()),
+                DeleteAction::make()
+                    ->visible(fn (Model $record): bool => ! $record->trashed()),
+
+                ForceDeleteAction::make()
+                    ->visible(fn (Model $record): bool => $record->trashed()),
+                RestoreAction::make()
+                    ->visible(fn (Model $record): bool => $record->trashed()),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

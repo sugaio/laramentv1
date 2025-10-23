@@ -12,19 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('organizations', function (Blueprint $table) {
-            // Sesuai Playbook v2: PK harus UUID
-            $table->uuid('id')->primary();
-
-            $table->string('name'); // Nama Organisasi
-            $table->uuid('owner_id')->nullable()->index();
-            $table->string('status', 50)->default('active')->index();
+            $table->ulid('id')->primary();
+            $table->string('name');
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
             $table->softDeletes();
-
-            $table->foreign('owner_id')
-                    ->references('id')
-                    ->on('users')
-                    ->onDelete('set null');
         });
     }
 
